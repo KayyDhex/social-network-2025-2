@@ -1,11 +1,13 @@
 import { User } from "@/types/common.type";
+import { supabase } from "@/utils/supabase";
 import { createContext, useState } from "react";
 
 interface AuthContextProps {
     user: User | null,
-    login: (email: string, password: string) => boolean,
+    login: (email: string, password: string) => Promise<boolean>,
     register: (user: User, password: string) => void
 }
+
 
 export const AuthContext = createContext({} as AuthContextProps);
 
@@ -35,15 +37,9 @@ export const AuthProvider = ({ children }: any) => {
 
     // funciones
 
-    const login = (email: string, password: string) => {
-        const userExist = fakeDataSource
-            .passwords
-            .find(value => value.email == email &&
-                value.password == password)
-        if (userExist) {
-            setUser(userExist)
-            return true
-        }
+    const login = async (email: string, password: string) => {
+
+        const response = await supabase.auth.signInWithPassword({ email, password });
         return false
     }
 
