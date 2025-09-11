@@ -43,9 +43,10 @@ export const AuthProvider = ({ children }: any) => {
         return false
     }
 
-    const register = (user: User, password: string) => {
-
+    const register = async (user: User, password: string) => {
+        const response = await supabase.auth.signUp({ email: user.email, password });
     }
+
     return <AuthContext.Provider
         value={{
             user,
