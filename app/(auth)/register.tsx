@@ -1,20 +1,91 @@
+import { AuthContext } from '@/contexts/AuthContext';
 import { Link, useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function Register() {
   const router = useRouter();
+  const { register } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleRegister = async () => {
+    if (!fullName.trim()) {
+      Alert.alert('Error', 'Por favor ingresa tu nombre completo');
+      return;
+    }
+
+    if (!email.trim()) {
+      Alert.alert('Error', 'Por favor ingresa tu correo electrónico');
+      return;
+    }
+
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      Alert.alert('Error', 'Por favor ingresa un correo electrónico válido');
+      return;
+    }
+
+    if (!password.trim()) {
+      Alert.alert('Error', 'Por favor ingresa una contraseña');
+      return;
+    }
+
+    if (password.length < 8) {
+      Alert.alert('Error', 'La contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Las contraseñas no coinciden');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const success = await register(
+        {
+          email: email.trim(),
+          name: fullName.trim(),
+          id: '' // Se asigna automáticamente
+        },
+        password
+      );
+
+      if (success) {
+        Alert.alert(
+          'Cuenta creada',
+          'Tu cuenta ha sido creada exitosamente',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/(main)/home')
+            }
+          ]
+        );
+      } else {
+        Alert.alert('Error', 'No se pudo crear la cuenta. Intenta de nuevo.');
+      }
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      const errorMessage = error?.message || 'Ocurrió un error inesperado. Intenta de nuevo.';
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Crear Cuenta</Text>
-        <Text style={styles.subtitle}>�nete a nuestra red social</Text>
+        <Text style={styles.subtitle}>Únete a nuestra red social</Text>
       </View>
 
       <View style={styles.form}>
@@ -32,7 +103,7 @@ export default function Register() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Correo Electr�nico</Text>
+          <Text style={styles.label}>Correo Electrónico</Text>
           <TextInput
             style={styles.input}
             value={email}
@@ -59,12 +130,12 @@ export default function Register() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Contrase�a</Text>
+          <Text style={styles.label}>Contraseña</Text>
           <TextInput
             style={styles.input}
             value={password}
             onChangeText={setPassword}
-            placeholder="M�nimo 8 caracteres"
+            placeholder="Mínimo 8 caracteres"
             placeholderTextColor="#999"
             secureTextEntry
             autoCapitalize="none"
@@ -73,12 +144,12 @@ export default function Register() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Confirmar Contrase�a</Text>
+          <Text style={styles.label}>Confirmar Contraseña</Text>
           <TextInput
             style={styles.input}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
-            placeholder="Repite tu contrase�a"
+            placeholder="Repite tu contraseña"
             placeholderTextColor="#999"
             secureTextEntry
             autoCapitalize="none"
@@ -86,25 +157,31 @@ export default function Register() {
           />
         </View>
 
-        <TouchableOpacity style={styles.registerButton}>
-          <Text style={styles.registerButtonText}>Crear Cuenta</Text>
+        <TouchableOpacity
+          style={[styles.registerButton, loading && styles.buttonDisabled]}
+          onPress={handleRegister}
+          disabled={loading}
+        >
+          <Text style={styles.registerButtonText}>
+            {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+          </Text>
         </TouchableOpacity>
 
         <View style={styles.termsContainer}>
           <Text style={styles.termsText}>
             Al registrarte, aceptas nuestros{' '}
-            <Text style={styles.termsLink}>T�rminos de Servicio</Text>
+            <Text style={styles.termsLink}>Términos de Servicio</Text>
             {' '}y{' '}
-            <Text style={styles.termsLink}>Pol�tica de Privacidad</Text>
+            <Text style={styles.termsLink}>Política de Privacidad</Text>
           </Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>�Ya tienes cuenta? </Text>
+        <Text style={styles.footerText}>¿Ya tienes cuenta? </Text>
         <Link href="/login" asChild>
           <TouchableOpacity>
-            <Text style={styles.loginLink}>Inicia Sesi�n</Text>
+            <Text style={styles.loginLink}>Inicia Sesión</Text>
           </TouchableOpacity>
         </Link>
       </View>
@@ -195,5 +272,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#007AFF',
     fontWeight: '500',
+  },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
   },
 });

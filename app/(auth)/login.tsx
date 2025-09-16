@@ -10,17 +10,6 @@ export default function Login() {
   const context = useContext(AuthContext);
   const router = useRouter()
 
-  // context: {{
-  //     user,
-  //     login,
-  //     register,
-  //     resetPassword
-  // }}
-
-  // router -> useRouter
-  // <Link href=""> </Link>
-  // @ts-ignore
-
   const handleLogin = async () => {
     const response = await context.login(username, password)
     if (response) {
