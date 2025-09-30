@@ -45,7 +45,7 @@ export const DataProvider = ({ children }: any) => {
 
             const { data, error } = await supabase
                 .from("chats")
-                .select("*")
+                .select("*, user:user_id(*), user1:user_id2(*),messages(*)") // Check this query
                 .eq("user_id_1", id);
 
             if (!error) {

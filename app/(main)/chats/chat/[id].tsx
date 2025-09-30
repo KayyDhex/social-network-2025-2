@@ -36,14 +36,12 @@ export default function Chat() {
     useEffect(() => {
         // Where -> message.chatId changes
         const channel = supabase
-            .channel(id as string) 
+            .channel(id as string)
             .on('postgres_changes',
                 { event: '*', schema: 'public', table: 'messages' },
                 (payload) => {
                     console.log('Change received!', payload);
-                }).subscribe((status, error) => console.log({
-                    status, error
-                }));
+                }).subscribe((status, error) => console.log({ status, error }));
         return () => {
             supabase.removeChannel(channel);
         }
